@@ -60,21 +60,19 @@ build-kaniko: ## Build the image with Kaniko.
 		rm .image-registry-auth-config.json
 		echo "WARNING: The file/dir permission changes don't seem to be kept in the kaniko-built image."
 
-run: ## Run container on port configured in `config.env`
-	mkdir -p ./host
-	docker run -i -t --rm --env-file=./run.env -u $(UID):$(GID) \
-	  $(HOST_MOUNT) $(GPUS_ARG) -p=$(HOST_PORT):$(CONTAINER_PORT) \
-	  --name="$(APP_NAME)" $(ENTRYPOINT_ARG) $(APP_NAME) $(ENTRYPOINT) \
+run: ## Run container on port configured in ${DOCKER_RUN_ENV_FILE}
+	docker run -i -t --rm --env-file=./${DOCKER_RUN_ENV_FILE} \
+	  -u $(UID):$(GID) $(HOST_MOUNT_ARG) $(GPUS_ARG) \
+	  -p=$(HOST_PORT):$(CONTAINER_PORT) --name="$(APP_NAME)" \
+	  $(ENTRYPOINT_ARG) $(APP_NAME) $(DOCKER_RUN_CMD_ARGS)
+
+run-kaniko: ## Run container on port configured in ${DOCKER_RUN_ENV_FILE} using remote image built by Kaniko.
+	docker run -i -t --rm --env-file=./${DOCKER_RUN_ENV_FILE} \
+	  -u $(UID):$(GID) $(HOST_MOUNT_ARG) -p=$(HOST_PORT):$(CONTAINER_PORT) \
+	  --name="$(APP_NAME)" $(ENTRYPOINT_ARG) $(IMAGE_REPO)/$(APP_NAME):$(TAG) \
 	  $(DOCKER_RUN_CMD_ARGS)
 
-run-kaniko: ## Run container on port configured in `config.env` using remote image built by Kaniko.
-	mkdir -p ./host
-	docker run -i -t --rm --env-file=./run.env -u $(UID):$(GID) \
-	  -v $(PWD)/host:/host -p=$(HOST_PORT):$(CONTAINER_PORT) \
-	  --name="$(APP_NAME)" $(ENTRYPOINT_ARG) $(IMAGE_REPO)/$(APP_NAME):$(TAG) \
-	  $(ENTRYPOINT) $(DOCKER_RUN_CMD_ARGS)
-
-up: build run ## Run container on port configured in `config.env` (Alias to run)
+up: build run ## Run container on port configured in ${DOCKER_RUN_ENV_FILE} (Alias to run)
 
 stop: ## Stop and remove a running container
 	docker stop $(APP_NAME); docker rm $(APP_NAME)

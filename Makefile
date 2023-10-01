@@ -124,3 +124,8 @@ docker-clean: ## Prune unused images, containers, and networks from the local Do
 
 version: ## Use git tag to create a tag for {VERSION} in the git repo.
 	git tag ${VERSION}
+	@echo 'you will also need to push the tag with a command like:'
+	@echo '  git push origin $(VERSION)'
+	@echo 'or to push all tags:'
+	@echo '  git push origin --tags'
+

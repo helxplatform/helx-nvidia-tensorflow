@@ -14,6 +14,9 @@ jobs:
 
     steps:
     -
+      name: free up disk space by removing /opt/hostedtoolcache
+      run: rm -rf /opt/hostedtoolcache
+    -
       name: Checkout
       uses: actions/checkout@v3
     -

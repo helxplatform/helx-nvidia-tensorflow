@@ -41,4 +41,4 @@ jobs:
     -
       name: push version
       run: make publish-version
-      if: ${{ BRANCH == 'main' }} && ${{ TAG == VERSION }}
+      if: ${{ env.BRANCH == 'main' }} && ${{ env.TAG == env.VERSION }}

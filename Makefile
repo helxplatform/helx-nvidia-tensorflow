@@ -13,6 +13,7 @@ DATETIME := $(shell /bin/date "+%Y%m%d%H%M")
 # get the latest commit hash in the short form
 COMMIT_HASH := $(shell git rev-parse --short HEAD)
 COMMIT_DATETIME := $(shell git log -1 --format=%cd --date=format:"%Y%m%d%H%M")
+CURRENT_BRANCH := $(shell git branch --show-current)
 ifneq ($(shell git status --porcelain),)
     # add the date/time and '-dirty' if the tree is dirty
 	COMMIT_HASH := $(COMMIT_HASH)-$(DATETIME)-dirty
@@ -26,7 +27,7 @@ endif
 # thanks to https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 .PHONY: help build build-nc build-kaniko run run-kaniko up stop release \
 	publish publish-latest publish-version publish-short-hash \
-	tag tag-latest tag-version tag-short-hash docker-clean 
+	tag tag-latest tag-version tag-short-hash docker-clean version
 
 help: ## This help.
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -80,35 +81,46 @@ stop: ## Stop and remove a running container
 release: build-nc publish ## Make a release by building and publishing tagged containers to ECR
 
 # Docker publish
-publish: publish-latest publish-version publish-short-hash ## Publish tags
+publish: publish-latest publish-branch publish-short-hash ## Publish tags
 	@echo 'publish tags latest $(TAG) $(COMMIT_HASH) to $(IMAGE_REPO)'
 
 publish-latest: tag-latest ## Publish the `latest` tagged container to ECR
 	@echo 'publish latest to $(IMAGE_REPO)'
 	docker push $(IMAGE_REPO)/$(APP_NAME):latest
 
-publish-version: tag-version ## Publish the `{TAG}` tagged container to ECR
+publish-branch: tag-branch ## Publish the `{CURRENT_BRANCH}` tagged container to ECR
 	@echo 'publish $(TAG) to $(IMAGE_REPO)'
-	docker push $(IMAGE_REPO)/$(APP_NAME):$(TAG)
+	docker push $(IMAGE_REPO)/$(APP_NAME):$(CURRENT_BRANCH)
 
 publish-short-hash: tag-short-hash ## Publish the short-hash tagged container to ECR
 	@echo 'publish $(COMMIT_HASH) to $(IMAGE_REPO)'
 	docker push $(IMAGE_REPO)/$(APP_NAME):$(COMMIT_HASH)
 
+publish-version: tag-version ## Publish the `{VERSION}` tagged container to ECR
+	@echo 'publish $(VERSION) to $(IMAGE_REPO)'
+	docker push $(IMAGE_REPO)/$(APP_NAME):$(VERSION)
+
 # Docker tagging
-tag: tag-latest tag-version tag-short-hash ## Generate container tags
+tag: tag-latest tag-branch tag-short-hash ## Generate container tags
 
 tag-latest: ## Generate container `latest` tag
 	@echo 'create tag latest'
 	docker tag $(APP_NAME) $(IMAGE_REPO)/$(APP_NAME):latest
 
-tag-version: ## Generate container `{TAG}` tag
-	@echo 'create tag $(TAG)'
-	docker tag $(APP_NAME) $(IMAGE_REPO)/$(APP_NAME):$(TAG)
+tag-branch: ## Generate container `{CURRENT_BRANCH}` tag
+	@echo 'create tag $(CURRENT_BRANCH)'
+	docker tag $(APP_NAME) $(IMAGE_REPO)/$(APP_NAME):$(CURRENT_BRANCH)
 
 tag-short-hash: ## Generate container short-hash tag created from last commit or current datetime if tree is dirty
 	@echo 'create tag $(COMMIT_HASH)'
 	docker tag $(APP_NAME) $(IMAGE_REPO)/$(APP_NAME):$(COMMIT_HASH)
 
+tag-version: ## Generate container `{VERSION}` tag
+	@echo 'create tag $(VERSION)'
+	docker tag $(APP_NAME) $(IMAGE_REPO)/$(APP_NAME):$(VERSION)
+
 docker-clean: ## Prune unused images, containers, and networks from the local Docker system.
 	docker system prune -f
+
+version: ## Use git tag to create a tag for {VERSION} in the git repo.
+	git tag ${VERSION}

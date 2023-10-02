@@ -32,19 +32,3 @@ jobs:
     - 
       name: push
       run: make publish
-    - 
-      name: Extract Branch Name
-      run: echo "BRANCH=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
-    - 
-      name: Extract Tag Name
-      run: echo "TAG=$(git name-rev --name-only --tags HEAD)" >> $GITHUB_ENV
-    - 
-      name: get VERSION from config.env
-      run:  grep "^VERSION" config.env >> $GITHUB_ENV
-    - 
-      name: print env
-      run: env
-    -
-      name: push version
-      if: env.BRANCH == 'main' && env.TAG == env.VERSION
-      run: make publish-version

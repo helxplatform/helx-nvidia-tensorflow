@@ -27,7 +27,7 @@ endif
 # thanks to https://marmelab.com/blog/2016/02/29/auto-documented-makefile.html
 .PHONY: help build build-nc build-kaniko run run-kaniko up stop release \
 	publish publish-latest publish-version publish-short-hash \
-	tag tag-latest tag-version tag-short-hash docker-clean version
+	tag tag-latest tag-version tag-short-hash docker-clean version version-force
 
 help: ## This help.
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
@@ -129,3 +129,9 @@ version: ## Use git tag to create a tag for {VERSION} in the git repo.
 	@echo 'or to push all tags:'
 	@echo '  git push origin --tags'
 
+version-force: ## Use git tag to create a tag for {VERSION} in the git repo. replace the tag if it exists.
+	git tag --force ${VERSION}
+	@echo 'you will also need to push the tag with a command like:'
+	@echo '  git push origin $(VERSION)'
+	@echo 'or to push all tags:'
+	@echo '  git push origin --tags'

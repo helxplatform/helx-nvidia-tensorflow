@@ -37,7 +37,7 @@ jobs:
       run: echo "BRANCH=$(echo ${GITHUB_REF##*/})" >> $GITHUB_ENV
     - 
       name: Extract Tag Name
-      run: echo "TAG=$(git describe --exact-match --tags HEAD)" >> $GITHUB_ENV
+      run: echo "TAG=$(git name-rev --name-only --tags HEAD)" >> $GITHUB_ENV
     - 
       name: get VERSION from config.env
       run:  grep "^VERSION" config.env >> $GITHUB_ENV

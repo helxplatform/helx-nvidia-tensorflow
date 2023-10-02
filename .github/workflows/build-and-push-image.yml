@@ -43,5 +43,6 @@ jobs:
       run:  grep "^VERSION" config.env >> $GITHUB_ENV
     -
       name: push version
+      run: env
       if: env.BRANCH == 'main' && env.TAG == env.VERSION
       run: make publish-version

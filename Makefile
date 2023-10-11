@@ -89,7 +89,7 @@ publish-latest: tag-latest ## Publish the `latest` tagged container to ECR
 	docker push $(IMAGE_REPO)/$(APP_NAME):latest
 
 publish-branch: tag-branch ## Publish the `{CURRENT_BRANCH}` tagged container to ECR
-	@echo 'publish $(TAG) to $(IMAGE_REPO)'
+	@echo 'publish $(CURRENT_BRANCH) to $(IMAGE_REPO)'
 	docker push $(IMAGE_REPO)/$(APP_NAME):$(CURRENT_BRANCH)
 
 publish-short-hash: tag-short-hash ## Publish the short-hash tagged container to ECR
